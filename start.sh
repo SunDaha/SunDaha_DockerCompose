@@ -185,6 +185,20 @@ echo ""
 info "创建 Docker 网络 pub-network ..."
 docker network create pub-network 2>/dev/null || true
 
+# 安装 unzip 工具（IK 分词器安装需要）
+if ! command -v unzip >/dev/null 2>&1; then
+    info "安装 unzip 工具 ..."
+    if command -v apt-get >/dev/null 2>&1; then
+        apt-get update -qq && apt-get install -y -qq unzip
+    elif command -v yum >/dev/null 2>&1; then
+        yum install -y -q unzip
+    elif command -v apk >/dev/null 2>&1; then
+        apk add --no-cache unzip
+    else
+        warn "无法自动安装 unzip，请手动安装后重试"
+    fi
+fi
+
 # ============== 第一阶段：基础数据服务 ==============
 info "【第一阶段】启动基础数据服务: MySQL, Redis, MongoDB, PostgreSQL"
 
