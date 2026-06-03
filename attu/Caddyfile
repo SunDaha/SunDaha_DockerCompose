@@ -1,0 +1,7 @@
+:8080 {
+    basic_auth {
+        {$ATTU_BASIC_AUTH_USERNAME} {$ATTU_BASIC_AUTH_PASSWORD_HASH}
+    }
+
+    reverse_proxy attu:3000
+}

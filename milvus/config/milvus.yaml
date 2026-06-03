@@ -1,0 +1,19 @@
+etcd:
+  endpoints:
+    - milvus-etcd:2379
+  rootPath: sundaha-dev
+
+mq:
+  type: rocksmq
+
+common:
+  security:
+    authorizationEnabled: true
+
+minio:
+  address: minio
+  port: 9000
+  accessKeyID: admin
+  secretAccessKey: SunDaha_8322368
+  bucketName: milvus
+  useSSL: false

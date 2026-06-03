@@ -1,0 +1,410 @@
+services:
+  #============== 缓存 ==============
+  redis:
+    image: redis:7.2
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ${PWD}/redis/config/redis.conf:/usr/local/etc/redis/redis.conf:rw
+      - ${PWD}/redis/data:/data:rw
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--requirepass",
+        "SunDaha_8322368",
+      ]
+    networks:
+      - pub-network
+
+  #============== 数据库 ==============
+  # Mysql
+  mysql:
+    image: mysql:8.4.1
+    container_name: mysql-8
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=SunDaha_8322368
+      - TZ=Asia/Shanghai
+      - SET_CONTAINER_TIMEZONE=true
+      - CONTAINER_TIMEZONE=Asia/Shanghai
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+    volumes:
+      - ${PWD}/mysql/config:/etc/mysql/conf.d
+      - ${PWD}/mysql/data:/var/lib/mysql
+      - ${PWD}/mysql/logs:/var/log/mysql
+      - ${PWD}/mysql/init:/docker-entrypoint-initdb.d
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - pub-network
+
+  # Postgres
+  postgres_db:
+    image: pgvector/pgvector:pg17
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: SunDaha_8322368
+      TZ: Asia/Shanghai
+    volumes:
+      - ${PWD}/postgres/data:/var/lib/postgresql/data
+      - ${PWD}/postgres/config:/etc/postgresql
+      - ${PWD}/postgres/init:/docker-entrypoint-initdb.d
+      - ${PWD}/postgres/logs:/var/log/postgresql
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  # MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: SunDaha_8322368
+      MONGO_INITDB_DATABASE: mydb
+      TZ: Asia/Shanghai
+    ports:
+      - "27017:27017"
+    volumes:
+      - ${PWD}/mongodb/data:/data/db
+      - ${PWD}/mongodb/config:/etc/mongo
+      - ${PWD}/mongodb/init:/docker-entrypoint-initdb.d
+      - ${PWD}/mongodb/logs:/var/log/mongodb
+      - /etc/localtime:/etc/localtime:ro
+    command: >
+      mongod
+      --auth
+      --bind_ip_all
+      --logpath /var/log/mongodb/mongod.log
+      --logappend
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pub-network
+
+  #============== 搜索引擎 ==============
+  # Elasticsearch
+  elasticsearch:
+    image: elasticsearch:8.15.0
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - TZ=Asia/Shanghai
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ${PWD}/elasticsearch/data:/usr/share/elasticsearch/data
+      - ${PWD}/elasticsearch/config:/usr/share/elasticsearch/config
+      - ${PWD}/elasticsearch/plugins:/usr/share/elasticsearch/plugins
+      - ${PWD}/elasticsearch/logs:/usr/share/elasticsearch/logs
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  # Kibana
+  kibana:
+    image: kibana:8.15.0
+    container_name: kibana
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - I18N_LOCALE=zh-CN
+      - TZ=Asia/Shanghai
+    ports:
+      - "5601:5601"
+    volumes:
+      - ${PWD}/kibana/config:/usr/share/kibana/config
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  #============== 对象存储服务 ==============
+  # Minio
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: minio
+    hostname: minio
+    restart: always
+    command: server --console-address ":9001" --address ":9000" /data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: SunDaha_8322368
+      TZ: Asia/Shanghai
+    volumes:
+      - ${PWD}/minio/data:/data
+      - ${PWD}/minio/config:/root/.minio
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  #============== 向量数据库 ==============
+  # Milvus Etcd
+  milvus-etcd:
+    image: quay.io/coreos/etcd:v3.5.25
+    container_name: milvus-etcd
+    restart: always
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: 1000
+      ETCD_QUOTA_BACKEND_BYTES: 4294967296
+      ETCD_SNAPSHOT_COUNT: 50000
+      TZ: Asia/Shanghai
+    command:
+      [
+        "etcd",
+        "--advertise-client-urls=http://milvus-etcd:2379",
+        "--listen-client-urls",
+        "http://0.0.0.0:2379",
+        "--data-dir",
+        "/etcd",
+      ]
+    volumes:
+      - ${PWD}/milvus/etcd:/etcd
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    logging:
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  # Milvus
+  milvus:
+    image: milvusdb/milvus:v2.6.15
+    container_name: milvus-standalone
+    restart: always
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY: admin
+      MINIO_SECRET_KEY: SunDaha_8322368
+      MINIO_BUCKET_NAME: milvus
+      MINIO_USE_SSL: "false"
+      TZ: Asia/Shanghai
+    volumes:
+      - ${PWD}/milvus/data:/var/lib/milvus
+      - ${PWD}/milvus/config/milvus.yaml:/milvus/configs/user.yaml:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      milvus-etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  # Attu UI for Milvus
+  attu:
+    image: zilliz/attu:v3.0.0-beta.1
+    container_name: attu
+    restart: always
+    env_file:
+      - ${PWD}/attu/.env
+    environment:
+      MILVUS_ADDRESS: milvus-standalone:19530
+      MILVUS_NAME: SunDaha Milvus
+      MILVUS_DATABASE: default
+      ATTU_DB_PATH: /data/attu.db
+      PORT: 3000
+    volumes:
+      - ${PWD}/attu/data:/data
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      milvus:
+        condition: service_healthy
+    logging:
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  # Authenticated reverse proxy for Attu
+  attu-proxy:
+    image: caddy:2
+    container_name: attu-proxy
+    restart: always
+    env_file:
+      - ${PWD}/attu/.env
+    ports:
+      - "${ATTU_HOST_PORT:-18000}:8080"
+    volumes:
+      - ${PWD}/attu/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      attu:
+        condition: service_started
+    logging:
+      options:
+        max-size: "20m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  #============== 消息队列 ==============
+  #RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    hostname: rabbitmq-node1
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: SunDaha_8322368
+      RABBITMQ_NODENAME: rabbitmq-node1
+      TZ: Asia/Shanghai
+    volumes:
+      - ${PWD}/rabbitmq/data:/var/lib/rabbitmq
+      - ${PWD}/rabbitmq/logs:/var/log/rabbitmq
+      - ${PWD}/rabbitmq/config:/etc/rabbitmq
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+  #============== 任务调度 ==============
+  # XXL-JOB Admin
+  xxl-job-admin:
+    image: xuxueli/xxl-job-admin:3.4.0
+    container_name: xxl-job-admin
+    restart: always
+    environment:
+      JAVA_OPTS: -Xms256m -Xmx256m
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-8:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: SunDaha_8322368
+      XXL_JOB_ACCESSTOKEN: SunDaha_8322368
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${PWD}/xxljob/logs:/data/applogs/xxl-job-admin
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f -o /dev/null http://localhost:8080/xxl-job-admin/ || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - pub-network
+
+networks:
+  pub-network:
+    external: true

@@ -1,0 +1,41 @@
+# ==================== Elasticsearch 8.15.0 配置 ====================
+
+# ---- 集群 ----
+cluster.name: docker-es-cluster
+node.name: es-node-1
+
+# ---- 网络 ----
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.max_content_length: 200mb
+
+# ---- 路径 ----
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# ---- 发现（单节点模式） ----
+discovery.type: single-node
+
+# ---- 安全（开发环境关闭） ----
+xpack.security.enabled: false
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# ---- 内存锁定（防止 swap） ----
+bootstrap.memory_lock: true
+
+# ---- 索引默认设置 ----
+# 单节点无需副本
+action.auto_create_index: true
+
+# ---- 监控（关闭自带监控减少资源消耗） ----
+xpack.monitoring.collection.enabled: false
+
+# ---- 机器学习（关闭减少资源消耗） ----
+xpack.ml.enabled: false
+
+# ---- GeoIP 下载（离线环境关闭） ----
+ingest.geoip.downloader.enabled: false

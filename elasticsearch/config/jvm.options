@@ -1,0 +1,36 @@
+# ==================== Elasticsearch JVM 配置 ====================
+
+# ---- 堆内存 ----
+# 建议设置为物理内存的 50%，且不超过 32GB
+-Xms512m
+-Xmx512m
+
+# ---- GC 配置（ES 8.x 默认使用 G1GC） ----
+-XX:+UseG1GC
+-XX:G1ReservePercent=25
+-XX:InitiatingHeapOccupancyPercent=30
+
+# ---- GC 日志 ----
+-Xlog:gc*,gc+age=trace,safepoint:file=logs/gc.log:utctime,pid,tags:filecount=32,filesize=64m
+
+# ---- 性能优化 ----
+-XX:+AlwaysPreTouch
+-Djava.awt.headless=true
+-Dfile.encoding=UTF-8
+-Djna.nosys=true
+-Djdk.io.File.enableADS=true
+
+# ---- OOM 处理 ----
+-XX:+ExitOnOutOfMemoryError
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:HeapDumpPath=data
+
+# ---- 临时目录 ----
+-Djava.io.tmpdir=${ES_TMPDIR}
+
+# ---- DNS 缓存时间（适应容器环境） ----
+-Des.networkaddress.cache.ttl=60
+-Des.networkaddress.cache.negative.ttl=10
+
+# ---- Log4j2 安全 ----
+-Dlog4j2.formatMsgNoLookups=true

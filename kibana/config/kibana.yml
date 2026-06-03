@@ -1,0 +1,35 @@
+# ==================== Kibana 8.15.0 配置 ====================
+
+# ---- 服务器 ----
+server.name: kibana
+server.port: 5601
+server.host: 0.0.0.0
+server.publicBaseUrl: "http://localhost:5601"
+
+# ---- Elasticsearch 连接 ----
+# 注意: 主机名需与 docker-compose.yml 中的服务名一致
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# 如果 ES 开启了 xpack.security，取消以下注释并填写凭据
+# elasticsearch.username: "kibana_system"
+# elasticsearch.password: "your_password"
+
+# ES 请求超时时间
+elasticsearch.requestTimeout: 30000
+elasticsearch.pingTimeout: 30000
+
+# ---- 国际化 ----
+i18n.locale: "zh-CN"
+
+# ---- 监控 ----
+monitoring.ui.container.elasticsearch.enabled: true
+
+# ---- 日志 ----
+logging.root.level: info
+
+# ---- 安全 (CSP) ----
+csp.strict: false
+
+# ---- 遥测（关闭数据上报） ----
+telemetry.enabled: false
+telemetry.optIn: false
