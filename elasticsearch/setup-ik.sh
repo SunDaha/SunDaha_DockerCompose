@@ -41,6 +41,24 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "[INFO] 正在解压到 ${PLUGIN_DIR} ..."
+
+# 确保 unzip 可用
+if ! command -v unzip >/dev/null 2>&1; then
+    echo "[INFO] 安装 unzip ..."
+    if command -v apt-get >/dev/null 2>&1; then
+        apt-get update -qq && apt-get install -y -qq unzip
+    elif command -v yum >/dev/null 2>&1; then
+        yum install -y -q unzip
+    elif command -v apk >/dev/null 2>&1; then
+        apk add --no-cache unzip
+    else
+        echo "[ERROR] 无法自动安装 unzip，请手动安装后重试"
+        rm -rf "${PLUGIN_DIR}"
+        rm -f "${TEMP_ZIP}"
+        exit 1
+    fi
+fi
+
 unzip -o "${TEMP_ZIP}" -d "${PLUGIN_DIR}"
 
 if [ $? -ne 0 ]; then

@@ -181,8 +181,17 @@ echo "       基础设施一键启动脚本"
 echo "=========================================="
 echo ""
 
+# 创建公用 Docker 网络
+info "创建 Docker 网络 pub-network ..."
+docker network create pub-network 2>/dev/null || true
+
 # ============== 第一阶段：基础数据服务 ==============
 info "【第一阶段】启动基础数据服务: MySQL, Redis, MongoDB, PostgreSQL"
+
+# 确保 MongoDB 日志目录存在且可写
+mkdir -p "${SCRIPT_DIR}/mongodb/logs"
+chmod 777 "${SCRIPT_DIR}/mongodb/logs"
+
 docker compose up -d mysql redis mongodb postgres_db
 
 wait_healthy mysql-8
