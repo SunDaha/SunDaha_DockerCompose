@@ -225,6 +225,13 @@ echo ""
 # ============== 第二阶段：Elasticsearch + IK + Kibana ==============
 info "【第二阶段】安装 IK 分词器 & 启动 Elasticsearch + Kibana"
 
+# ES 8.x 容器以 UID 1000 运行，修复宿主机挂载目录权限
+info "修复 Elasticsearch 目录权限 (UID 1000)..."
+chown -R 1000:1000 "${SCRIPT_DIR}/elasticsearch/data" \
+                     "${SCRIPT_DIR}/elasticsearch/config" \
+                     "${SCRIPT_DIR}/elasticsearch/logs" \
+                     "${SCRIPT_DIR}/elasticsearch/plugins"
+
 IK_SCRIPT="${SCRIPT_DIR}/elasticsearch/setup-ik.sh"
 
 if [ -f "$IK_SCRIPT" ]; then
