@@ -227,10 +227,7 @@ info "【第二阶段】安装 IK 分词器 & 启动 Elasticsearch + Kibana"
 
 # ES 容器需要对挂载目录有写入权限
 info "修复 Elasticsearch 目录权限..."
-chmod -R 777 "${SCRIPT_DIR}/elasticsearch/data" \
-             "${SCRIPT_DIR}/elasticsearch/config" \
-             "${SCRIPT_DIR}/elasticsearch/logs" \
-             "${SCRIPT_DIR}/elasticsearch/plugins"
+chmod -R 777 "${SCRIPT_DIR}/elasticsearch/"
 
 IK_SCRIPT="${SCRIPT_DIR}/elasticsearch/setup-ik.sh"
 
