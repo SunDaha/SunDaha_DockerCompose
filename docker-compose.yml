@@ -381,7 +381,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-8:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: SunDaha_8322368
-      XXL_JOB_ACCESSTOKEN: SunDaha_8322368
+      XXL_JOB_ACCESSTOKEN: sundaha123456
       TZ: Asia/Shanghai
     ports:
       - "8080:8080"
