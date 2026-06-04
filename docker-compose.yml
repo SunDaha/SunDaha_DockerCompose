@@ -124,7 +124,8 @@ services:
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - xpack.security.enabled=false
+      - ELASTIC_PASSWORD=SunDaha_8322368
+      - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
       - TZ=Asia/Shanghai
@@ -139,7 +140,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test:
-        ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+        ["CMD-SHELL", "curl -u elastic:SunDaha_8322368 -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -157,6 +158,8 @@ services:
     restart: always
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=SunDaha_8322368
       - I18N_LOCALE=zh-CN
       - TZ=Asia/Shanghai
     ports:
