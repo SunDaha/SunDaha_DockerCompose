@@ -268,6 +268,11 @@ echo ""
 
 # ============== 第三阶段：消息队列 & 对象存储 ==============
 info "【第三阶段】启动 RabbitMQ + MinIO + Etcd"
+
+# 确保 RabbitMQ 日志目录存在且可写
+mkdir -p "${SCRIPT_DIR}/rabbitmq/logs"
+chmod 777 "${SCRIPT_DIR}/rabbitmq/logs"
+
 docker compose up -d rabbitmq minio milvus-etcd
 
 wait_healthy rabbitmq
