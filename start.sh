@@ -240,6 +240,27 @@ fi
 docker compose up -d elasticsearch
 wait_healthy elasticsearch
 
+# 为 Kibana 生成服务账号 token（Kibana 8.x 禁止使用 elastic 超级用户）
+KIBANA_ENV_FILE="${SCRIPT_DIR}/kibana/.env"
+SERVICE_TOKEN=""
+TOKEN_API="http://localhost:9200/_security/service/elastic/kibana/credential/token/kibana-token"
+
+# 删除旧 token（忽略失败），重新创建
+curl -s -u elastic:SunDaha_8322368 -X DELETE "http://localhost:9200/_security/service/elastic/kibana/credential/token/kibana-token" > /dev/null 2>&1 || true
+
+SERVICE_TOKEN=$(curl -s -u elastic:SunDaha_8322368 -X POST "${TOKEN_API}" \
+    | grep -o '"value":"[^"]*"' | head -1 | cut -d'"' -f4)
+
+if [ -n "${SERVICE_TOKEN}" ]; then
+    cat > "${KIBANA_ENV_FILE}" <<EOF
+ELASTICSEARCH_SERVICEACCOUNTTOKEN=${SERVICE_TOKEN}
+EOF
+    info "Kibana 服务账号 token 已生成 -> ${KIBANA_ENV_FILE}"
+else
+    error "Kibana 服务账号 token 生成失败！请检查 ES 安全配置"
+    exit 1
+fi
+
 docker compose up -d kibana
 wait_healthy kibana
 

@@ -156,10 +156,10 @@ services:
     image: kibana:8.15.0
     container_name: kibana
     restart: always
+    env_file:
+      - ${PWD}/kibana/.env
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=SunDaha_8322368
       - I18N_LOCALE=zh-CN
       - TZ=Asia/Shanghai
     ports:
