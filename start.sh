@@ -175,11 +175,55 @@ wait_healthy() {
     return 1
 }
 
+# 配置 Docker 镜像源
+configure_docker_mirror() {
+    printf "${YELLOW}是否更新 Docker 镜像源？[y/N]${NC} "
+    read -r choice || choice=""
+    case "$choice" in
+        y|Y) ;;
+        *) info "跳过镜像源配置"; return 0 ;;
+    esac
+
+    local daemon_json="/etc/docker/daemon.json"
+    info "写入镜像源配置到 ${daemon_json} ..."
+    mkdir -p /etc/docker
+
+    if [ -f "$daemon_json" ]; then
+        cp "$daemon_json" "${daemon_json}.bak"
+        info "已备份原配置到 ${daemon_json}.bak"
+    fi
+
+    cat > "$daemon_json" <<'EOF'
+{
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://docker.m.daocloud.io",
+    "https://docker.xuanyuan.me",
+    "https://docker.1panel.live"
+  ]
+}
+EOF
+
+    info "重启 Docker 服务使配置生效 ..."
+    if command -v systemctl >/dev/null 2>&1 && systemctl is-active docker >/dev/null 2>&1; then
+        systemctl daemon-reload && systemctl restart docker
+    elif command -v service >/dev/null 2>&1; then
+        service docker restart
+    else
+        warn "无法自动重启 Docker，请手动执行后生效"
+        return 0
+    fi
+
+    info "Docker 镜像源已更新"
+}
+
 echo ""
 echo "=========================================="
 echo "       基础设施一键启动脚本"
 echo "=========================================="
 echo ""
+
+configure_docker_mirror
 
 # 创建公用 Docker 网络
 info "创建 Docker 网络 pub-network ..."
@@ -225,7 +269,7 @@ echo ""
 # ============== 第二阶段：Elasticsearch + IK + Kibana ==============
 info "【第二阶段】安装 IK 分词器 & 启动 Elasticsearch + Kibana"
 
-# ES 容器需要对挂载目录有写入权限
+# ES 容器需要对挂载目录有写入权限（容器内 elasticsearch 用户 UID=1000）
 info "修复 Elasticsearch 目录权限..."
 chmod -R 777 "${SCRIPT_DIR}/elasticsearch/"
 
