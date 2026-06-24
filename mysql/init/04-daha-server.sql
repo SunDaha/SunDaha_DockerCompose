@@ -97,226 +97,6 @@ INSERT INTO `gen_table_column` VALUES (45, 4, 'create_time', 'create_time', 'dat
 INSERT INTO `gen_table_column` VALUES (46, 4, 'update_time', 'update_time', 'datetime', 'LocalDateTime', 'updateTime', 0, 0, 0, 0, 0, 1, 0, 'EQ', 'datetime', '', 13);
 
 
--- ----------------------------
--- Table structure for qrtz_job_details
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_job_details`;
-CREATE TABLE `qrtz_job_details`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `job_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '任务名称',
-  `job_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '任务组名',
-  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '相关介绍',
-  `job_class_name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '执行任务类名称',
-  `is_durable` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '是否持久化',
-  `is_nonconcurrent` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '是否并发',
-  `is_update_data` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '是否更新数据',
-  `requests_recovery` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '是否接受恢复执行',
-  `job_data` blob NULL COMMENT '存放持久化job对象',
-  PRIMARY KEY (`sched_name`, `job_name`, `job_group`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '任务详细信息表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_job_details
--- ----------------------------
-
-
--- ----------------------------
--- Table structure for qrtz_triggers
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_triggers`;
-CREATE TABLE `qrtz_triggers`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '触发器的名字',
-  `trigger_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '触发器所属组的名字',
-  `job_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_job_details表job_name的外键',
-  `job_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_job_details表job_group的外键',
-  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '相关介绍',
-  `next_fire_time` bigint NULL DEFAULT NULL COMMENT '上一次触发时间（毫秒）',
-  `prev_fire_time` bigint NULL DEFAULT NULL COMMENT '下一次触发时间（默认为-1表示不触发）',
-  `priority` int NULL DEFAULT NULL COMMENT '优先级',
-  `trigger_state` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '触发器状态',
-  `trigger_type` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '触发器的类型',
-  `start_time` bigint NOT NULL COMMENT '开始时间',
-  `end_time` bigint NULL DEFAULT NULL COMMENT '结束时间',
-  `calendar_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '日程表名称',
-  `misfire_instr` smallint NULL DEFAULT NULL COMMENT '补偿执行的策略',
-  `job_data` blob NULL COMMENT '存放持久化job对象',
-  PRIMARY KEY (`sched_name`, `trigger_name`, `trigger_group`) USING BTREE,
-  INDEX `sched_name`(`sched_name` ASC, `job_name` ASC, `job_group` ASC) USING BTREE,
-  CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `job_name`, `job_group`) REFERENCES `qrtz_job_details` (`sched_name`, `job_name`, `job_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '触发器详细信息表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_triggers
--- ----------------------------
-
-
--- ----------------------------
--- Table structure for qrtz_blob_triggers
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_blob_triggers`;
-CREATE TABLE `qrtz_blob_triggers`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `blob_data` blob NULL COMMENT '存放持久化Trigger对象',
-  PRIMARY KEY (`sched_name`, `trigger_name`, `trigger_group`) USING BTREE,
-  CONSTRAINT `qrtz_blob_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Blob类型的触发器表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_blob_triggers
--- ----------------------------
-
--- ----------------------------
--- Table structure for qrtz_calendars
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_calendars`;
-CREATE TABLE `qrtz_calendars`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `calendar_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '日历名称',
-  `calendar` blob NOT NULL COMMENT '存放持久化calendar对象',
-  PRIMARY KEY (`sched_name`, `calendar_name`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '日历信息表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_calendars
--- ----------------------------
-
--- ----------------------------
--- Table structure for qrtz_cron_triggers
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_cron_triggers`;
-CREATE TABLE `qrtz_cron_triggers`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `cron_expression` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'cron表达式',
-  `time_zone_id` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '时区',
-  PRIMARY KEY (`sched_name`, `trigger_name`, `trigger_group`) USING BTREE,
-  CONSTRAINT `qrtz_cron_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Cron类型的触发器表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_cron_triggers
--- ----------------------------
-
--- ----------------------------
--- Table structure for qrtz_fired_triggers
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_fired_triggers`;
-CREATE TABLE `qrtz_fired_triggers`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `entry_id` varchar(95) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度器实例id',
-  `trigger_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `instance_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度器实例名',
-  `fired_time` bigint NOT NULL COMMENT '触发的时间',
-  `sched_time` bigint NOT NULL COMMENT '定时器制定的时间',
-  `priority` int NOT NULL COMMENT '优先级',
-  `state` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '状态',
-  `job_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '任务名称',
-  `job_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '任务组名',
-  `is_nonconcurrent` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '是否并发',
-  `requests_recovery` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '是否接受恢复执行',
-  PRIMARY KEY (`sched_name`, `entry_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '已触发的触发器表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_fired_triggers
--- ----------------------------
-
-
--- ----------------------------
--- Table structure for qrtz_locks
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_locks`;
-CREATE TABLE `qrtz_locks`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `lock_name` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '悲观锁名称',
-  PRIMARY KEY (`sched_name`, `lock_name`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '存储的悲观锁信息表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_locks
--- ----------------------------
-
--- ----------------------------
--- Table structure for qrtz_paused_trigger_grps
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_paused_trigger_grps`;
-CREATE TABLE `qrtz_paused_trigger_grps`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `trigger_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  PRIMARY KEY (`sched_name`, `trigger_group`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '暂停的触发器表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_paused_trigger_grps
--- ----------------------------
-
--- ----------------------------
--- Table structure for qrtz_scheduler_state
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_scheduler_state`;
-CREATE TABLE `qrtz_scheduler_state`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `instance_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '实例名称',
-  `last_checkin_time` bigint NOT NULL COMMENT '上次检查时间',
-  `checkin_interval` bigint NOT NULL COMMENT '检查间隔时间',
-  PRIMARY KEY (`sched_name`, `instance_name`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '调度器状态表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_scheduler_state
--- ----------------------------
-
--- ----------------------------
--- Table structure for qrtz_simple_triggers
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_simple_triggers`;
-CREATE TABLE `qrtz_simple_triggers`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `repeat_count` bigint NOT NULL COMMENT '重复的次数统计',
-  `repeat_interval` bigint NOT NULL COMMENT '重复的间隔时间',
-  `times_triggered` bigint NOT NULL COMMENT '已经触发的次数',
-  PRIMARY KEY (`sched_name`, `trigger_name`, `trigger_group`) USING BTREE,
-  CONSTRAINT `qrtz_simple_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '简单触发器的信息表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_simple_triggers
--- ----------------------------
-
--- ----------------------------
--- Table structure for qrtz_simprop_triggers
--- ----------------------------
-DROP TABLE IF EXISTS `qrtz_simprop_triggers`;
-CREATE TABLE `qrtz_simprop_triggers`  (
-  `sched_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `str_prop_1` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'String类型的trigger的第一个参数',
-  `str_prop_2` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'String类型的trigger的第二个参数',
-  `str_prop_3` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'String类型的trigger的第三个参数',
-  `int_prop_1` int NULL DEFAULT NULL COMMENT 'int类型的trigger的第一个参数',
-  `int_prop_2` int NULL DEFAULT NULL COMMENT 'int类型的trigger的第二个参数',
-  `long_prop_1` bigint NULL DEFAULT NULL COMMENT 'long类型的trigger的第一个参数',
-  `long_prop_2` bigint NULL DEFAULT NULL COMMENT 'long类型的trigger的第二个参数',
-  `dec_prop_1` decimal(13, 4) NULL DEFAULT NULL COMMENT 'decimal类型的trigger的第一个参数',
-  `dec_prop_2` decimal(13, 4) NULL DEFAULT NULL COMMENT 'decimal类型的trigger的第二个参数',
-  `bool_prop_1` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'Boolean类型的trigger的第一个参数',
-  `bool_prop_2` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'Boolean类型的trigger的第二个参数',
-  PRIMARY KEY (`sched_name`, `trigger_name`, `trigger_group`) USING BTREE,
-  CONSTRAINT `qrtz_simprop_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '同步机制的行锁表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of qrtz_simprop_triggers
--- ----------------------------
-
 
 -- ----------------------------
 -- Table structure for service_address
@@ -385,6 +165,7 @@ CREATE TABLE `student`  (
 -- Records of student
 -- ----------------------------
 INSERT INTO `student` VALUES (4, '12', '12', NULL, NULL, '1', '1', '1', 1, 1, 1, '2026-02-09 12:55:30', '2026-02-09 12:55:33');
+
 
 -- ----------------------------
 -- Table structure for sys_config_group
@@ -598,74 +379,6 @@ CREATE TABLE `sys_file_group`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '文件分组表' ROW_FORMAT = DYNAMIC;
 
--- ----------------------------
--- Records of sys_file_group
--- ----------------------------
-
--- ----------------------------
--- Table structure for sys_job
--- ----------------------------
-DROP TABLE IF EXISTS `sys_job`;
-CREATE TABLE `sys_job`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `job_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '任务名称',
-  `job_group` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'DEFAULT' COMMENT '任务组名',
-  `invoke_target` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '调用目标字符串',
-  `cron_expression` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'cron执行表达式',
-  `misfire_policy` tinyint NULL DEFAULT 3 COMMENT '计划执行错误策略(1-立即执行 2-执行一次 3-放弃执行)',
-  `concurrent` tinyint NULL DEFAULT 1 COMMENT '是否并发执行(0-允许 1-禁止)',
-  `status` tinyint NULL DEFAULT 0 COMMENT '状态(0-暂停 1-正常)',
-  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '备注',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `create_by` bigint NULL DEFAULT NULL COMMENT '创建人',
-  `update_by` bigint NULL DEFAULT NULL COMMENT '更新人',
-  `deleted` tinyint NULL DEFAULT 0 COMMENT '删除标识(0-未删除 1-已删除)',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '定时任务表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of sys_job
--- ----------------------------
-INSERT INTO `sys_job` VALUES (1, '系统默认（无参）', 'DEFAULT', 'sampleTask.noParams', '0/10 * * * * ?', 3, 1, 0, '无参数的示例任务', '2026-01-29 22:42:08', '2026-03-05 07:11:28', 1, 1, 0);
-INSERT INTO `sys_job` VALUES (2, '系统默认（有参）', 'DEFAULT', 'sampleTask.withParams(\'hello\')', '0/15 * * * * ?', 3, 1, 0, '有参数的示例任务', '2026-01-29 22:42:08', '2026-03-05 07:11:29', 1, 1, 0);
-INSERT INTO `sys_job` VALUES (3, '系统默认（多参数）', 'DEFAULT', 'sampleTask.noParams(\'参数\',true,10L,0.5D,100)', '0/10 * * * * ?', 3, 1, 0, '多参数的示例任务', '2026-01-29 22:59:47', '2026-03-05 07:11:08', 1, 1, 0);
-
--- ----------------------------
--- Table structure for sys_job_log
--- ----------------------------
-DROP TABLE IF EXISTS `sys_job_log`;
-CREATE TABLE `sys_job_log`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `job_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '任务名称',
-  `job_group` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '任务组名',
-  `invoke_target` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '调用目标字符串',
-  `job_message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '日志信息',
-  `status` tinyint NULL DEFAULT 0 COMMENT '执行状态(0-正常 1-失败)',
-  `exception_info` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '异常信息',
-  `start_time` datetime NULL DEFAULT NULL COMMENT '开始时间',
-  `stop_time` datetime NULL DEFAULT NULL COMMENT '停止时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 24 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '定时任务日志表' ROW_FORMAT = DYNAMIC;
-
-
--- ----------------------------
--- Table structure for sys_login_log
--- ----------------------------
-DROP TABLE IF EXISTS `sys_login_log`;
-CREATE TABLE `sys_login_log`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户账号',
-  `ipaddr` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '登录IP地址',
-  `login_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '登录地点',
-  `browser` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '浏览器类型',
-  `os` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作系统',
-  `status` tinyint NULL DEFAULT 0 COMMENT '登录状态(0-成功 1-失败)',
-  `msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '提示消息',
-  `login_time` datetime NULL DEFAULT NULL COMMENT '登录时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 268 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '登录日志表' ROW_FORMAT = DYNAMIC;
-
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -800,49 +513,8 @@ INSERT INTO `sys_menu` VALUES (276, 272, '学生管理修改', 3, NULL, NULL, 's
 INSERT INTO `sys_menu` VALUES (277, 272, '学生管理删除', 3, NULL, NULL, 'system:student:remove', NULL, 5, 1, 1, 0, '2026-02-03 08:58:09', '2026-02-09 12:55:57', 1, 1, 1);
 INSERT INTO `sys_menu` VALUES (278, 36, '日志列表', 3, '', '', 'monitor:loginlog:list', '', 0, 1, 1, 0, '2026-03-15 15:37:38', '2026-03-15 15:37:38', 1, 1, 0);
 
--- ----------------------------
--- Table structure for sys_notice
--- ----------------------------
-DROP TABLE IF EXISTS `sys_notice`;
-CREATE TABLE `sys_notice`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '通知ID',
-  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '通知标题',
-  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '通知内容',
-  `notice_type` tinyint NULL DEFAULT 1 COMMENT '通知类型(1通知 2公告)',
-  `status` tinyint NULL DEFAULT 0 COMMENT '状态(0草稿 1发布)',
-  `create_by` bigint NULL DEFAULT NULL COMMENT '创建者ID',
-  `create_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '创建者名称',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `deleted` tinyint NULL DEFAULT 0 COMMENT '删除标识',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_notice_type`(`notice_type` ASC) USING BTREE,
-  INDEX `idx_status`(`status` ASC) USING BTREE,
-  INDEX `idx_create_time`(`create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统通知表' ROW_FORMAT = DYNAMIC;
 
 
--- ----------------------------
--- Table structure for sys_oper_log
--- ----------------------------
-DROP TABLE IF EXISTS `sys_oper_log`;
-CREATE TABLE `sys_oper_log`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '模块标题',
-  `business_type` int NULL DEFAULT 0 COMMENT '业务类型(0-其它 1-新增 2-修改 3-删除)',
-  `method` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '方法名称',
-  `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求方式',
-  `oper_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作人员',
-  `oper_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求URL',
-  `oper_ip` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '主机地址',
-  `oper_param` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求参数',
-  `json_result` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '返回参数',
-  `status` int NULL DEFAULT 0 COMMENT '操作状态(0-正常 1-异常)',
-  `error_msg` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '错误消息',
-  `oper_time` datetime NULL DEFAULT NULL COMMENT '操作时间',
-  `cost_time` bigint NULL DEFAULT 0 COMMENT '消耗时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 399 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志表' ROW_FORMAT = DYNAMIC;
 
 
 -- ----------------------------
@@ -876,26 +548,7 @@ INSERT INTO `sys_post` VALUES (4, 2, 'dev', '开发工程师', 4, 1, '开发工�
 INSERT INTO `sys_post` VALUES (6, 1, 'manager', '总经理', 2, 1, '', '2026-01-29 22:42:08', '2026-01-29 22:42:08', 1, 1, 0);
 INSERT INTO `sys_post` VALUES (7, 2, 'test_coder', '测试工程师', 0, 1, '', '2026-02-09 15:47:35', '2026-02-09 17:03:40', 1, 1, 1);
 
--- ----------------------------
--- Table structure for sys_register_log
--- ----------------------------
-DROP TABLE IF EXISTS `sys_register_log`;
-CREATE TABLE `sys_register_log`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '注册用户名',
-  `ipaddr` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '注册ip地址',
-  `register_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '注册所在地',
-  `browser` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '浏览器类型',
-  `os` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作系统',
-  `status` tinyint NULL DEFAULT NULL COMMENT '注册状态(0-成功，1-失败，2-等待审核)',
-  `msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '提示信息',
-  `register_time` datetime NULL DEFAULT NULL COMMENT '登录时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '注册日志表' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of sys_register_log
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -1182,45 +835,6 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 INSERT INTO `sys_user` VALUES (1, 1, 'admin', '$2a$10$qcRKcAcyUd4dSrJqTz5BR.U2Phas9QsfIPU7Pyi3Ha15CplWNnkaG', '超级管理员', '/api/files/avatar/1/72b14b562a7b4f6c81e9a3cc95bae644.jpg', '', NULL, 0, 1, 0, NULL, '2026-01-29 22:42:08', '2026-03-10 02:52:21', NULL, 1, 'admin', NULL, 0);
 
--- ----------------------------
--- Table structure for sys_user_blacklist
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user_blacklist`;
-CREATE TABLE `sys_user_blacklist`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `blocked_user_id` bigint NOT NULL COMMENT '被拉黑的用户ID',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '拉黑时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_user_blocked`(`user_id` ASC, `blocked_user_id` ASC) USING BTREE,
-  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
-  INDEX `idx_blocked_user_id`(`blocked_user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户黑名单表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of sys_user_blacklist
--- ----------------------------
-
--- ----------------------------
--- Table structure for sys_user_notice
--- ----------------------------
-DROP TABLE IF EXISTS `sys_user_notice`;
-CREATE TABLE `sys_user_notice`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `notice_id` bigint NOT NULL COMMENT '通知ID',
-  `is_read` tinyint NULL DEFAULT 0 COMMENT '是否已读(0未读 1已读)',
-  `read_time` datetime NULL DEFAULT NULL COMMENT '阅读时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_user_notice`(`user_id` ASC, `notice_id` ASC) USING BTREE,
-  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
-  INDEX `idx_notice_id`(`notice_id` ASC) USING BTREE,
-  INDEX `idx_is_read`(`is_read` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户通知关联表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of sys_user_notice
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for sys_user_post
@@ -1262,3 +876,233 @@ INSERT INTO `sys_user_role` VALUES (39, 18, 2);
 INSERT INTO `sys_user_role` VALUES (47, 26, 2);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+-- ----------------------------
+-- Chat模块
+-- ----------------------------
+create table `im_friend`
+(
+    `id`                bigint       not null auto_increment primary key comment 'id',
+    `user_id`           bigint       not null comment '用户id',
+    `friend_id`         bigint       not null comment '好友id',
+    `friend_nick_name`  varchar(255) not null comment '好友昵称',
+    `friend_head_image` varchar(255) default '' comment '好友头像',
+    `is_dnd`            tinyint comment '免打扰标识(do not disturb)  0:关闭   1:开启',
+    `deleted`           tinyint comment '删除标识  0：正常   1：已删除',
+    `created_time`      datetime     default current_timestamp comment '创建时间',
+    `version`           BIGINT       DEFAULT 0 comment '版本号',
+    UNIQUE KEY `idx_user_friend_id` (`user_id`, `friend_id`),
+    key                 `idx_friend_id` (`friend_id`)
+) engine = innodb charset = utf8mb4 comment '好友';
+
+create table `im_private_message`
+(
+    `id`        bigint      not null auto_increment primary key comment 'id',
+    `local_id`  varchar(32) comment '业务id,由前端生成',
+    `seq_no`    int         not null comment '序列号,单个会话消息的序号连续递增',
+    `send_id`   bigint      not null comment '发送用户id',
+    `recv_id`   bigint      not null comment '接收用户id',
+    `conv_key`  varchar(64) not null comment '会话key，格式:userId1_userId2',
+    `content`   text character set utf8mb4 comment '发送内容',
+    `type`      tinyint     not null comment '消息类型 0:文字 1:图片 2:文件 3:语音 4:视频 21:提示',
+    `status`    tinyint     not null comment '状态 0:未读 1:已发送 2:撤回 3:已读',
+    `send_time` datetime(3) default current_timestamp(3) comment '发送时间',
+    key         `idx_conv_key_seq_no`(`conv_key`,`seq_no`),
+    key         `idx_send_recv_id` (`send_id`, `recv_id`,`id`),
+    key         `idx_recv_id` (`recv_id`)
+) engine = innodb charset = utf8mb4 comment '私聊消息';
+
+create table `im_group`
+(
+    `id`               bigint       not null auto_increment primary key comment 'id',
+    `name`             varchar(255) not null comment '群名字',
+    `owner_id`         bigint       not null comment '群主id',
+    `head_image`       varchar(255)  default '' comment '群头像',
+    `head_image_thumb` varchar(255)  default '' comment '群头像缩略图',
+    `notice`           varchar(1024) default '' comment '群公告',
+    `is_banned`        tinyint(1) default 0 comment '是否被封禁 0:否 1:是',
+    `reason`           varchar(255)  default '' comment '被封禁原因',
+    `dissolve`         tinyint(1) default 0 comment '是否已解散',
+    `created_time`     datetime      default current_timestamp comment '创建时间'
+) engine = innodb charset = utf8mb4 comment '群';
+
+create table `im_group_member`
+(
+    `id`                bigint not null auto_increment primary key comment 'id',
+    `group_id`          bigint not null comment '群id',
+    `user_id`           bigint not null comment '用户id',
+    `user_nick_name`    varchar(255) default '' comment '用户昵称',
+    `remark_nick_name`  varchar(255) default '' comment '显示昵称备注',
+    `head_image`        varchar(255) default '' comment '用户头像',
+    `remark_group_name` varchar(255) default '' comment '显示群名备注',
+    `is_dnd`            tinyint(1) comment '免打扰标识(do not disturb)  0:关闭   1:开启',
+    `quit`              tinyint(1) default 0 comment '是否已退出',
+    `quit_time`         datetime     default null comment '退出时间',
+    `created_time`      datetime     default current_timestamp comment '创建时间',
+    `version`           bigint       default 0 comment '版本号',
+    key                 `idx_group_id` (`group_id`),
+    key                 `idx_user_id` (`user_id`)
+) engine = innodb charset = utf8mb4 comment '群成员';
+
+create table `im_group_message`
+(
+    `id`             bigint  not null auto_increment primary key comment 'id',
+    `local_id`       varchar(32) comment '业务id,由前端生成',
+    `group_id`       bigint  not null comment '群id',
+    `seq_no`         int     not null comment '序列号,单个会话消息的序号连续递增',
+    `send_id`        bigint  not null comment '发送用户id',
+    `send_nick_name` varchar(255) default '' comment '发送用户昵称',
+    `content`        text character set utf8mb4 comment '发送内容',
+    `at_user_ids`    varchar(1024) comment '被@的用户id列表，逗号分隔',
+    `receipt`        tinyint(1) default 0 comment '是否回执消息',
+    `receipt_ok`     tinyint(1) default 0 comment '回执消息是否完成',
+    `type`           tinyint not null comment '消息类型 0:文字 1:图片 2:文件 3:语音 4:视频 21:提示',
+    `status`         tinyint      default 0 comment '状态 0:未发出  2:撤回 ',
+    `send_time`      datetime(3) default current_timestamp(3) comment '发送时间',
+    key              `idx_group_id_seq_no` (`group_id`,`seq_no`)
+) engine = innodb charset = utf8mb4 comment '群消息';
+
+create table `im_sensitive_word`
+(
+    `id`          bigint      not null auto_increment primary key comment 'id',
+    `content`     varchar(64) not null comment '敏感词内容',
+    `enabled`     tinyint(1) default 0 comment '是否启用 0:未启用 1:启用',
+    `creator`     bigint   default null comment '创建者',
+    `create_time` datetime default current_timestamp comment '创建时间'
+) engine = innodb charset = utf8mb4 comment '敏感词';
+
+create table `im_file_info`
+(
+    `id`              bigint       not null auto_increment primary key comment 'id',
+    `file_name`       varchar(255) not null comment '文件名',
+    `file_path`       varchar(255) not null comment '文件地址',
+    `file_size`       integer      not null comment '文件大小',
+    `file_type`       tinyint      not null comment '0:普通文件 1:图片 2:视频',
+    `compressed_path` varchar(255) default null comment '压缩文件路径',
+    `cover_path`      varchar(255) default null comment '封面文件路径，仅视频文件有效',
+    `upload_time`     datetime     default current_timestamp comment '上传时间',
+    `is_permanent`    tinyint(1) default 0 comment '是否永久文件',
+    `md5`             varchar(64)  not null comment '文件md5',
+    key               `idx_md5` (md5)
+) engine = innodb charset = utf8mb4 comment '文件';
+
+create table `im_message_deletion`
+(
+    `id`          bigint  not null auto_increment primary key comment 'id',
+    `user_id`     bigint  not null comment '用户id',
+    `chat_type`   tinyint not null comment '会话类型 1:私聊 2:群聊',
+    `chat_id`     bigint  not null comment '好友id、群聊id',
+    `message_id`  bigint(20) comment '消息id',
+    `delete_type` tinyint not null comment '删除类型 1:按消息删除 2:按会话删除',
+    `delete_time` datetime default current_timestamp comment '消息删除时间',
+    key           `idx_user_id` (`user_id`)
+) engine = innodb charset = utf8mb4 comment '消息删除记录';
+
+
+
+-- ----------------------------
+-- 通知
+-- ----------------------------
+-- ----------------------------
+-- Table structure for sys_notice
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_notice`;
+CREATE TABLE `sys_notice`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '通知ID',
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '通知标题',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '通知内容',
+  `notice_type` tinyint NULL DEFAULT 1 COMMENT '通知类型(1通知 2公告)',
+  `status` tinyint NULL DEFAULT 0 COMMENT '状态(0草稿 1发布)',
+  `create_by` bigint NULL DEFAULT NULL COMMENT '创建者ID',
+  `create_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '创建者名称',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `deleted` tinyint NULL DEFAULT 0 COMMENT '删除标识',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_notice_type`(`notice_type` ASC) USING BTREE,
+  INDEX `idx_status`(`status` ASC) USING BTREE,
+  INDEX `idx_create_time`(`create_time` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统通知表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for sys_user_notice
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user_notice`;
+CREATE TABLE `sys_user_notice`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `notice_id` bigint NOT NULL COMMENT '通知ID',
+  `is_read` tinyint NULL DEFAULT 0 COMMENT '是否已读(0未读 1已读)',
+  `read_time` datetime NULL DEFAULT NULL COMMENT '阅读时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_user_notice`(`user_id` ASC, `notice_id` ASC) USING BTREE,
+  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
+  INDEX `idx_notice_id`(`notice_id` ASC) USING BTREE,
+  INDEX `idx_is_read`(`is_read` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户通知关联表' ROW_FORMAT = DYNAMIC;
+
+
+
+
+-- ----------------------------
+-- 日志表
+-- ----------------------------
+-- ----------------------------
+-- Table structure for sys_login_log(登陆日志)
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_login_log`;
+CREATE TABLE `sys_login_log`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户账号',
+  `ipaddr` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '登录IP地址',
+  `login_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '登录地点',
+  `browser` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '浏览器类型',
+  `os` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作系统',
+  `status` tinyint NULL DEFAULT 0 COMMENT '登录状态(0-成功 1-失败)',
+  `msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '提示消息',
+  `login_time` datetime NULL DEFAULT NULL COMMENT '登录时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 268 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '登录日志表' ROW_FORMAT = DYNAMIC;
+
+
+-- ----------------------------
+-- Table structure for sys_register_log(注册日志)
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_register_log`;
+CREATE TABLE `sys_register_log`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '注册用户名',
+  `ipaddr` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '注册ip地址',
+  `register_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '注册所在地',
+  `browser` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '浏览器类型',
+  `os` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作系统',
+  `status` tinyint NULL DEFAULT NULL COMMENT '注册状态(0-成功，1-失败，2-等待审核)',
+  `msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '提示信息',
+  `register_time` datetime NULL DEFAULT NULL COMMENT '注册时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '注册日志表' ROW_FORMAT = Dynamic;
+
+
+-- ----------------------------
+-- Table structure for sys_oper_log(操作日志)
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_oper_log`;
+CREATE TABLE `sys_oper_log`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '模块标题',
+  `business_type` int NULL DEFAULT 0 COMMENT '业务类型(0-其它 1-新增 2-修改 3-删除)',
+  `method` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '方法名称',
+  `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求方式',
+  `oper_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作人员',
+  `oper_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求URL',
+  `oper_ip` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '主机地址',
+  `oper_param` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求参数',
+  `json_result` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '返回参数',
+  `status` int NULL DEFAULT 0 COMMENT '操作状态(0-正常 1-异常)',
+  `error_msg` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '错误消息',
+  `oper_time` datetime NULL DEFAULT NULL COMMENT '操作时间',
+  `cost_time` bigint NULL DEFAULT 0 COMMENT '消耗时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 399 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志表' ROW_FORMAT = DYNAMIC;
