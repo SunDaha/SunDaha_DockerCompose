@@ -311,19 +311,27 @@ wait_healthy kibana
 echo ""
 
 # ============== 第三阶段：消息队列 & 对象存储 ==============
-info "【第三阶段】启动 RabbitMQ + MinIO + Etcd"
+info "【第三阶段】启动 RabbitMQ + Kafka + MinIO + Etcd"
 
 # 确保 RabbitMQ 日志目录存在且可写
 mkdir -p "${SCRIPT_DIR}/rabbitmq/logs"
 chmod 777 "${SCRIPT_DIR}/rabbitmq/logs"
 
-docker compose up -d rabbitmq minio milvus-etcd
+# 确保 Kafka 数据目录存在且可写（Bitnami 镜像以 UID 1001 运行）
+mkdir -p "${SCRIPT_DIR}/kafka/data"
+chmod -R 777 "${SCRIPT_DIR}/kafka"
+
+docker compose up -d rabbitmq kafka minio milvus-etcd
 
 wait_healthy rabbitmq
+wait_healthy kafka 120
 wait_healthy minio
 if ! wait_healthy milvus-etcd 180; then
     warn "milvus-etcd 180s 内未就绪，继续启动 Milvus；如后续失败请检查 docker logs milvus-etcd"
 fi
+
+info "启动 Kafka UI"
+docker compose up -d kafka-ui
 
 echo ""
 
@@ -356,6 +364,9 @@ echo "  Kibana         ->  http://localhost:5601"
 echo "  XXL-JOB Admin  ->  http://localhost:8080/xxl-job-admin"
 echo "  RabbitMQ       ->  localhost:5672"
 echo "  RabbitMQ 管理  ->  http://localhost:15672"
+echo "  Kafka (宿主机) ->  localhost:9094"
+echo "  Kafka (容器内) ->  kafka:9092"
+echo "  Kafka UI       ->  http://localhost:8085"
 echo "  MinIO API      ->  http://localhost:9000"
 echo "  Milvus         ->  localhost:19530"
 echo "  Milvus Health  ->  http://localhost:9091/healthz"
