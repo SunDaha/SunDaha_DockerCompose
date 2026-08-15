@@ -313,6 +313,23 @@ echo ""
 # ============== 第三阶段：消息队列 & 对象存储 ==============
 info "【第三阶段】启动 RabbitMQ + Kafka + MinIO + Etcd"
 
+# 可选启动 Zookeeper（独立协调服务）
+printf "${YELLOW}是否启动 Zookeeper？[y/N]${NC} "
+read -r start_zk || start_zk=""
+case "$start_zk" in
+  y|Y)
+    # 确保数据/日志目录存在且可写（官方镜像 UID 1000）
+    mkdir -p "${SCRIPT_DIR}/zookeeper/data" "${SCRIPT_DIR}/zookeeper/datalog"
+    chmod -R 777 "${SCRIPT_DIR}/zookeeper"
+    docker compose up -d zookeeper
+    wait_healthy zookeeper
+    info "Zookeeper -> localhost:2181"
+    ;;
+  *)
+    info "跳过 Zookeeper"
+    ;;
+esac
+
 # 确保 RabbitMQ 日志目录存在且可写
 mkdir -p "${SCRIPT_DIR}/rabbitmq/logs"
 chmod 777 "${SCRIPT_DIR}/rabbitmq/logs"

@@ -341,6 +341,33 @@ services:
     networks:
       - pub-network
 
+  #============== 协调服务 ==============
+  # Zookeeper（独立服务，供其他应用使用；Kafka 仍用 KRaft）
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - ZOO_STANDALONE_ENABLED=true
+    ports:
+      - "2181:2181"
+    volumes:
+      - ${PWD}/zookeeper/data:/data
+      - ${PWD}/zookeeper/datalog:/datalogs
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD-SHELL", "zkServer.sh status | grep -q 'Mode: standalone'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - pub-network
+
   #============== 消息队列 ==============
   #RabbitMQ
   rabbitmq:
