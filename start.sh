@@ -175,6 +175,15 @@ wait_healthy() {
     return 1
 }
 
+# 等待服务健康；失败仅告警并跳过（适用于无下游依赖的服务）
+wait_healthy_or_skip() {
+    local service=$1
+    shift
+    if ! wait_healthy "$service" "$@"; then
+        warn "${service} 未就绪，跳过（无下游依赖，继续后续服务）"
+    fi
+}
+
 # 配置 Docker 镜像源
 configure_docker_mirror() {
     printf "${YELLOW}是否更新 Docker 镜像源？[y/N]${NC} "
@@ -259,10 +268,10 @@ bash "${SCRIPT_DIR}/mysql/init-db.sh"
 
 info "启动 XXL-JOB Admin"
 docker compose up -d xxl-job-admin
-wait_healthy xxl-job-admin
+wait_healthy_or_skip xxl-job-admin
 
-wait_healthy postgres
-wait_healthy mongodb
+wait_healthy_or_skip postgres
+wait_healthy_or_skip mongodb
 
 echo ""
 
@@ -306,7 +315,7 @@ else
 fi
 
 docker compose up -d kibana
-wait_healthy kibana
+wait_healthy_or_skip kibana
 
 echo ""
 
@@ -322,7 +331,7 @@ case "$start_zk" in
     mkdir -p "${SCRIPT_DIR}/zookeeper/data" "${SCRIPT_DIR}/zookeeper/datalog"
     chmod -R 777 "${SCRIPT_DIR}/zookeeper"
     docker compose up -d zookeeper
-    wait_healthy zookeeper
+    wait_healthy_or_skip zookeeper
     info "Zookeeper -> localhost:2181"
     ;;
   *)
@@ -340,28 +349,39 @@ chmod -R 777 "${SCRIPT_DIR}/kafka"
 
 docker compose up -d rabbitmq kafka minio milvus-etcd
 
-wait_healthy rabbitmq
-wait_healthy kafka 120
-wait_healthy minio
-if ! wait_healthy milvus-etcd 180; then
-    warn "milvus-etcd 180s 内未就绪，继续启动 Milvus；如后续失败请检查 docker logs milvus-etcd"
+wait_healthy_or_skip rabbitmq
+
+# kafka → kafka-ui（软依赖：kafka 失败则跳过 kafka-ui）
+if wait_healthy kafka 120; then
+    info "启动 Kafka UI"
+    docker compose up -d kafka-ui
+else
+    warn "kafka 未就绪，跳过 Kafka UI"
 fi
 
-info "启动 Kafka UI"
-docker compose up -d kafka-ui
+# minio + etcd → milvus（软依赖：任一失败则跳过 milvus 及 Attu）
+minio_ready=false
+etcd_ready=false
+if wait_healthy minio; then minio_ready=true; fi
+if wait_healthy milvus-etcd 180; then etcd_ready=true; fi
 
 echo ""
 
 # ============== 第四阶段：向量数据库 ==============
-info "【第四阶段】启动 Milvus"
-docker compose up -d milvus
+if [ "$minio_ready" = true ] && [ "$etcd_ready" = true ]; then
+    info "【第四阶段】启动 Milvus"
+    docker compose up -d milvus
 
-wait_healthy milvus-standalone 180
-
-echo ""
-ensure_attu_runtime_files
-info "【第五阶段】启动 Attu + UI Proxy"
-docker compose up -d attu attu-proxy
+    if wait_healthy milvus-standalone 180; then
+        ensure_attu_runtime_files
+        info "【第五阶段】启动 Attu + UI Proxy"
+        docker compose up -d attu attu-proxy
+    else
+        warn "milvus 未就绪，跳过 Attu + UI Proxy"
+    fi
+else
+    warn "minio 或 milvus-etcd 未就绪，跳过 Milvus 及 Attu"
+fi
 
 echo ""
 
